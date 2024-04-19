@@ -1,0 +1,34 @@
+WRITE identifier1234567890123456789012345678900
+WRITE
+
+FOR
+BREAK
+RETURN
+TRUE
+FALSETRUE
+0x123GH
+\jsjsj\
+0x0
+BOOL g = TRUE;
+//komentar
+#define a:=3+1; #define b:=4+a;
+c <= 7;
+0xABCDEF
+/* visestruki
+komentar
+*/
+.12
+123.45E
+12E+2
+12.E+2
+_ident
+12.34.56
+"Ovo je ispravan string"
+"Neispravan string
+milica"
+"jsssssssssssssssscccccccccccccc"
+ifintthis
+if(23this
+12.45
+45.
+37.2e+1   123e+2 ?greska?"""
