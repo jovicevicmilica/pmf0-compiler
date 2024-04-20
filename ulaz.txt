@@ -10,12 +10,12 @@ FALSETRUE
 \jsjsj\
 0x0
 BOOL g = TRUE;
-//komentar
+//komentar INT a = 5;
 #define a:=3+1; #define b:=4+a;
 c <= 7;
 0xABCDEF
 /* visestruki
-komentar
+komentar INT
 */
 .12
 123.45E
@@ -31,4 +31,13 @@ ifintthis
 if(23this
 12.45
 45.
-37.2e+1   123e+2 ?greska?"""
+37.2e+1   123e+2 ?greska?"proba"
+dhhcjxj"prevodioci
+INT c = 8;
+nesto
+"nesto
+123.45E+
+1.E2
+
+/*/*ugnjezdenikomentar*/# /*nezatvoren viselinijski komentar
+"nezatvoren string

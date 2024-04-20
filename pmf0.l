@@ -1,13 +1,22 @@
 %{
+    #define RED "\x1b[31m" //za greske
+    #define RESET "\x1b[0m" //vracanje na normalno stanje
     int column = 1; //pratimo kolonu, posto je flex ne generise moramo je samostalno uvecavati
+    int temp_column = 1; //pomocna kolona za nepravilne stringove
+    int comment_nesting = 0; //brojac za ugnjezdene komentare
+    int error_reported = 0; //isto za string, pamtimo da li je vec u vise redova
+
     #include <string.h>
     #define YY_USER_ACTION column += yyleng; //ovako ce nam se ova fja pozivati prije izvrsenja iceg drugog kod tokena, i time ne moramo
     //vrsiti sabiranje posebno u svakom dijelu, medjutim, ako je ne umanjimo posle u printu, vracace nam da je greska u poslednjem karakteru stringa, a ne prvom
     //sve zavisi do preferenci
+
+    //dodajemo string state zato sto se moze desiti da je string nezatvoren, a da je u vise redova, i onda je sve to cjelokupno greska
 %}
 
 %x LINE_COMMENT
 %x MULTILINE_COMMENT
+%x STRING_STATE
 
 %option yylineno
 %option noyywrap 
@@ -19,7 +28,7 @@
 \n          { column = 1; } //yylineno ne moramo dirati, on se automatski azurira
 
 "//"        { BEGIN(LINE_COMMENT); }
-"/*"        { BEGIN(MULTILINE_COMMENT); }
+"/*"        { comment_nesting = 1; BEGIN(MULTILINE_COMMENT); }
 
 "INT"       { printf("Tip: INT\n");    } //TIPOVI
 "DOUBLE"    { printf("Tip: DOUBLE\n"); }
@@ -67,7 +76,7 @@
                                             printf("Token: IDENTIFIER(%s)\n", yytext);
                                         }
 
-[a-zA-Z][a-zA-Z0-9_]{30}[^ \t\r\n]+     { printf("Greska: Neispravan format identifikatora (duzina prelazi 31): '%s' na liniji %d, koloni %d\n", yytext, yylineno, column - yyleng); } //umanjimo column za yyleng zbog yy_user_actiona koji nam racuna kolone
+[a-zA-Z][a-zA-Z0-9_]{30}[^ \t\r\n]+     { printf(RED "Greska: Neispravan format identifikatora (duzina prelazi 31): '%s' na liniji %d, koloni %d\n" RESET, yytext, yylineno, column - yyleng); } //umanjimo column za yyleng zbog yy_user_actiona koji nam racuna kolone
 
 (0x|0X)(0|[1-9A-Fa-f][0-9A-Fa-f]*)      {   //heksadecimalni brojevi
                                             //yylval.num = strtol(yytext, NULL, 16); 
@@ -76,7 +85,7 @@
                                             printf("Token: HEXINTEGER(%s)\n", yytext);
                                         }
 
-(0x|0X)[0-9A-Fa-f]+[^ \t\r\n0-9A-Fa-f]+ {  printf("Greska: Neispravan format heksadecimalne konstante (ima nedozvoljene cifre): '%s' na liniji %d, koloni %d\n", yytext, yylineno, column - yyleng); }
+(0x|0X)[0-9A-Fa-f]+[^ \t\r\n0-9A-Fa-f]+ {  printf(RED "Greska: Neispravan format heksadecimalne konstante (ima nedozvoljene cifre): '%s' na liniji %d, koloni %d\n" RESET, yytext, yylineno, column - yyleng); }
 
 [0-9]+\.[0-9]*([eE][+-]?[0-9]+)?        { 
                                             //yylval.dnum = atof(yytext); 
@@ -85,22 +94,19 @@
                                             printf("Token: DOUBLE(%s)\n", yytext);
                                         }
 
-\.[0-9]+([eE][+-]?[0-9]+)?              { printf("Greska: Neispravan format double konstante (nema vodecu cifru): '%s' na liniji %d, koloni %d\n", yytext, yylineno, column - yyleng); }
+\.[0-9]+([eE][+-]?[0-9]+)?              { printf(RED "Greska: Neispravan format double konstante (nema vodecu cifru): '%s' na liniji %d, koloni %d\n" RESET, yytext, yylineno, column - yyleng); }
 
-[0-9]+[eE][+-]?[0-9]+                   { printf("Greska: Neispravan format double konstante (eksponent bez tacke): '%s' na liniji %d, koloni %d\n", yytext, yylineno, column - yyleng); }
+[0-9]+[eE][+-]?[0-9]+                   { printf(RED "Greska: Neispravan format double konstante (eksponent bez tacke): '%s' na liniji %d, koloni %d\n" RESET, yytext, yylineno, column - yyleng); }
 
-[0-9]+(\.[0-9]*)?\.[0-9]+               { printf("Greska: Neispravan format double konstante (visak tacaka): '%s' na liniji %d, koloni %d\n", yytext, yylineno, column - yyleng); }
+[0-9]+(\.[0-9]*)?\.[0-9]+               { printf(RED "Greska: Neispravan format double konstante (visak tacaka): '%s' na liniji %d, koloni %d\n" RESET, yytext, yylineno, column - yyleng); }
 
-\"[^"\n]*\"                             {   //stringovi
-                                            //yylval.str = strdup(yytext); 
-                                            
-                                            //return STRING_CONST; 
-                                            printf("Token: STRING(%s)\n", yytext);
-                                        } 
+[0-9]+\.[0-9]*[eE][+-]?                 { printf(RED "Greska: Neispravan format double konstante (eksponent bez cifara poslije znaka): '%s' na liniji %d, koloni %d\n" RESET, yytext, yylineno, column - yyleng); }
 
-\"[^"\n]*                               { printf("Greska: Neispravan format stringa (nedovrsen je): '%s' na liniji %d, koloni %d\n", yytext, yylineno, column - yyleng); }
+\"[^"\n]*\"                             { printf("Token: STRING(%s)\n", yytext); }
 
-[_][a-zA-Z0-9_]+                        { printf("Greska: Neispravan format identifikatora (ne moze poceti sa '_') na liniji %d, koloni %d\n", yylineno, column - yyleng); }
+\"                                      { BEGIN(STRING_STATE); temp_column = column; error_reported = 0; }
+
+[_][a-zA-Z0-9_]+                        { printf(RED "Greska: Neispravan format identifikatora (ne moze poceti sa '_') na liniji %d, koloni %d\n" RESET, yylineno, column - yyleng); }
 
 "<="        { printf("Token: LE(<=)\n");        } //OPERATORI
 ">="        { printf("Token: GE(>=)\n");        }
@@ -126,17 +132,43 @@
 "("         { printf("Token: LBRACKET(()\n");   }
 ")"         { printf("Token: RBRACKET())\n");   }
 
-.           { printf("Greska: Neocekivani karakter '%c' na liniji %d, koloni %d\n", yytext[0], yylineno, column - yyleng); }
+.           { printf(RED "Greska: Neocekivani karakter '%c' na liniji %d, koloni %d\n" RESET, yytext[0], yylineno, column - yyleng); }
 
 <LINE_COMMENT>{
-"\n"        { printf("LINE COMMENT\n"); column = 1; BEGIN(INITIAL); } 
+"\n"        { printf("Comment: LINE\n"); column = 1; BEGIN(INITIAL); } //ugnjezdavanje jednolinijskih valjda ne treba? jer cim pocne // tretira se kao komentar, nije naglaseno
 .           {  } 
 }
 
 <MULTILINE_COMMENT>{ 
-"\n"        { printf("MULTILINE COMMENT\n"); column = 1; }
-"*/"        { BEGIN(INITIAL); } 
-.           { column++; } 
+"/*"        { comment_nesting++; printf(RED "Greska: Nije dozvoljeno ugnjezdavanje komentara na liniji %d, koloni %d\n" RESET, yylineno, column - yyleng); } //brojanje ugnjezdenja
+"*/"        { 
+                if(--comment_nesting == 0) {
+                    printf("Comment: MULTILINE\n");
+                }
+
+                BEGIN(INITIAL);
+            }
+.           { } //ignorisemo sve u komentaru osim novih linija i kraj komentara
+"\n"        { column = 1; }
+<<EOF>>     {
+                if(comment_nesting > 0) printf(RED "Greska: Nezatvoren viselinijski komentar na liniji %d, koloni %d\n" RESET, yylineno, column - yyleng);
+                BEGIN(INITIAL);
+            }
+}
+
+<STRING_STATE>{
+\\\"        { } //escaped quote, nista posebno ne radimo
+\\\n        { } //escaped newline
+\n          { 
+                if (error_reported == 0) {
+                    printf(RED "Greska: String u vise redova na liniji %d, koloni %d\n" RESET, yylineno, temp_column - yyleng); 
+                    error_reported = 1;
+                }
+                column = 1;
+            } //string u vise redova, nepravilno
+\"          { BEGIN(INITIAL); } //kraj stringa, vracanje na pocetno stanje
+<<EOF>>     { printf(RED "Greska: Nezatvoren string na kraju fajla, na liniji %d, koloni %d\n" RESET, yylineno, column - yyleng); BEGIN(INITIAL); } //string koji nije zatvoren prije kraja fajla
+.           { } 
 }
 
 %%
