@@ -1,0 +1,13 @@
+LET
+    INT x, y, a, b.
+    BOOL c.
+IN
+    x := a + b;
+    y := a * b;#
+
+    WHILE y > a
+    DO
+        a := a + 1;
+        x := a + b
+    END;
+END

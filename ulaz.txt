@@ -7,7 +7,7 @@ IN
     b := 3.5e+2;
 	c:=TRUE; //komentar
 	
-    IF a*4 = b
+    IF a*4 == b
     THEN
         a := b - 9;
         b := b ^ 3;

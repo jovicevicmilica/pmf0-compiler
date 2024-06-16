@@ -1,5 +1,6 @@
 %{
 #include "location.h"
+#include "ast.h"
 #include "parser.tab.h"
 #include "errors.h"
 #include "scanner.h"
@@ -65,7 +66,7 @@ int error_reported = 0; //isto za string, pamtimo da li je vec u vise redova
 
 0|[1-9][0-9]*                           { yylval.intVal = atoi(yytext); return INTEGER_CONST; }
 
-[a-zA-Z][a-zA-Z0-9_]{0,30}              { yylval.string = strdup(yytext); return IDENTIFIER; }
+[a-zA-Z][a-zA-Z0-9_]{0,30}              { yylval.stringVal = strdup(yytext); return IDENTIFIER; }
 
 [a-zA-Z][a-zA-Z0-9_]{30}[^ \t\r\n]+     { reportLexicalError("Neispravan format identifikatora (duzina prelazi 31)", yylineno, column - yyleng); }
 
@@ -83,7 +84,7 @@ int error_reported = 0; //isto za string, pamtimo da li je vec u vise redova
 
 [0-9]+\.[0-9]*[eE][+-]?                 { reportLexicalError("Neispravan format double konstante (eksponent bez cifara posle znaka)", yylineno, column - yyleng); }
 
-\"[^"\n]*\"                             { yylval.string = strdup(yytext); return STRING; }
+\"[^"\n]*\"                             { yylval.stringVal = strdup(yytext); return STRING_CONST; }
 
 \"                                      { BEGIN(STRING_STATE); temp_column = column; error_reported = 0; }
 
@@ -93,23 +94,23 @@ int error_reported = 0; //isto za string, pamtimo da li je vec u vise redova
 ">="    { return GE; }
 "<"     { return LT; }
 ">"     { return GT; }
-"="    { return EQ; }
+"=="    { return EQ; }
 "!="    { return NE; }
 "&&"    { return AND; }
 "||"    { return OR; }
 "!"     { return NOT; }
 "^"     { return POW; }
 
-"+"     { return '+'; }
-"-"     { return '-'; }
-"*"     { return '*'; }
-"/"     { return '/'; }
-"%"     { return '%'; }
-";"     { return ';'; }
-","     { return ','; }
-"."     { return '.'; }
-"("     { return '('; }
-")"     { return ')'; }
+"+"     { return PLUS; }
+"-"     { return MINUS; }
+"*"     { return MULTIPLY; }
+"/"     { return DIVIDE; }
+"%"     { return MOD; }
+";"     { return SEMICOLON; }
+","     { return COMMA; }
+"."     { return DOT; }
+"("     { return LPARENT; }
+")"     { return RPARENT; }
 
 .           { reportLexicalError("Neocekivani karakter", yylineno, column - yyleng); }
 
@@ -130,7 +131,7 @@ int error_reported = 0; //isto za string, pamtimo da li je vec u vise redova
 \\\"        { } //escaped quote, nista posebno ne radimo
 \\\n        { } //escaped newline
 \n          { if(error_reported == 0) { reportLexicalError("String u vise redova", yylineno, temp_column - yyleng); error_reported = 1; } column = 1; }
-\"          { yylval.string = strdup(yytext); BEGIN(INITIAL); return STRING; }
+\"          { yylval.stringVal = strdup(yytext); BEGIN(INITIAL); return STRING; }
 <<EOF>>     { reportLexicalError("Nezatvoren string na kraju fajla", yylineno, column - yyleng); BEGIN(INITIAL); }
 .           { }
 }

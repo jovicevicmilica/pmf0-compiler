@@ -39,42 +39,53 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     INT = 258,
-     DOUBLE = 259,
-     BOOL = 260,
-     STRING = 261,
-     LET = 262,
-     IN = 263,
-     END = 264,
-     ASSIGN = 265,
-     READ = 266,
-     WRITE = 267,
-     SKIP = 268,
-     IF = 269,
-     THEN = 270,
-     ELSE = 271,
-     FI = 272,
-     WHILE = 273,
-     DO = 274,
-     FOR = 275,
-     BREAK = 276,
-     RETURN = 277,
-     TRUE = 278,
-     FALSE = 279,
-     INTEGER_CONST = 280,
-     DOUBLE_CONST = 281,
-     IDENTIFIER = 282,
-     LE = 283,
-     GE = 284,
-     LT = 285,
-     GT = 286,
-     EQ = 287,
-     NE = 288,
-     AND = 289,
-     OR = 290,
-     NOT = 291,
-     POW = 292,
-     TO = 293
+     INTEGER_CONST = 258,
+     DOUBLE_CONST = 259,
+     IDENTIFIER = 260,
+     STRING_CONST = 261,
+     PLUS = 262,
+     MINUS = 263,
+     MULTIPLY = 264,
+     DIVIDE = 265,
+     MOD = 266,
+     LE = 267,
+     GE = 268,
+     LT = 269,
+     GT = 270,
+     EQ = 271,
+     NE = 272,
+     AND = 273,
+     OR = 274,
+     NOT = 275,
+     POW = 276,
+     ASSIGN = 277,
+     READ = 278,
+     WRITE = 279,
+     SKIP = 280,
+     IF = 281,
+     THEN = 282,
+     ELSE = 283,
+     FI = 284,
+     WHILE = 285,
+     DO = 286,
+     FOR = 287,
+     TO = 288,
+     BREAK = 289,
+     RETURN = 290,
+     STRING = 291,
+     BOOL = 292,
+     INT = 293,
+     DOUBLE = 294,
+     LPARENT = 295,
+     RPARENT = 296,
+     COMMA = 297,
+     DOT = 298,
+     SEMICOLON = 299,
+     TRUE = 300,
+     FALSE = 301,
+     LET = 302,
+     IN = 303,
+     END = 304
    };
 #endif
 
@@ -85,16 +96,17 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 11 "parser.y"
+#line 21 "parser.y"
 
     int intVal;
     double doubleVal;
-    char* string;
+    char* stringVal;
+    ASTNode *node;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 98 "parser.tab.h"
+#line 110 "parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

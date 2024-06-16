@@ -7,4 +7,4 @@ void yyerror(const char* s);
 int yyparse();
 int yylex();
 
-#endif // PARSER_H
+#endif 

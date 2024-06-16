@@ -3,7 +3,6 @@
 
 #include "location.h"
 #include "parser.h"
+#include "ast.h"
 
-// Deklaracije funkcija i tipova za leksičku analizu
-
-#endif // SCANNER_H
+#endif 

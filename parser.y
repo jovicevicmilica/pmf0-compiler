@@ -4,27 +4,36 @@
 #include "errors.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "ast.h"
 
-void yyerror(const char* s);
+void yyerror(const char *s); //funkcija za štampanje sintaksnih grešaka
+int syntax_error = 0; //dodajemo globalnu promjenljivu za praćenje grešaka, jer se stablo NE ŠTAMPA u slučaju greške
+
+//definišemo union u kom su tipovi tokena, neki imaju tip, a neki nemaju
+//takođe uvodimo tip node za sve djelove gramatike, kako bi omogućili štampanje AST
+//sve potrebne djelove za AST pretvaramo u čvorove i na kraju štampamo
+//ostatak tipova je za konstante, stringove i identifikatore
+
+//navodimo tokene, i uz one koje imaju tip i njihov tip iz union
+//zatim definišemo jesu li right ili left operatori
 %}
 
 %union {
     int intVal;
     double doubleVal;
-    char* string;
+    char* stringVal;
+    ASTNode *node;
 }
 
-%token INT DOUBLE BOOL STRING
-%token LET IN END ASSIGN READ WRITE SKIP
-%token IF THEN ELSE FI WHILE DO FOR BREAK RETURN
-%token TRUE FALSE
-%token INTEGER_CONST DOUBLE_CONST IDENTIFIER
-%token LE GE LT GT EQ NE AND OR NOT POW
-%token TO
+%token <intVal> INTEGER_CONST
+%token <doubleVal> DOUBLE_CONST
+%token <stringVal> IDENTIFIER STRING_CONST
+%token PLUS MINUS MULTIPLY DIVIDE MOD LE GE LT GT EQ NE AND OR NOT POW
+%token ASSIGN READ WRITE SKIP IF THEN ELSE FI WHILE DO FOR TO BREAK RETURN
+%token STRING BOOL INT DOUBLE LPARENT RPARENT COMMA DOT SEMICOLON
+%token TRUE FALSE LET IN END
 
-%type <intVal> INTEGER_CONST
-%type <doubleVal> DOUBLE_CONST
-%type <string> IDENTIFIER
+%type <node> program declarations declaration id_list type command_sequence command break_loop expression
 
 %locations
 
@@ -32,8 +41,8 @@ void yyerror(const char* s);
 %left AND
 %left EQ NE
 %left LT LE GT GE
-%left '+' '-'
-%left '*' '/' '%'
+%left PLUS MINUS
+%left MULTIPLY DIVIDE MOD
 %right POW
 %right NOT
 %left ELSE
@@ -41,72 +50,96 @@ void yyerror(const char* s);
 %%
 
 program:
-    LET declarations IN command_sequence END {}
-    ;
+    LET declarations IN command_sequence END {
+        if (syntax_error == 0) { //provjeravamo da li je bilo grešaka, jer se inače ne štampa stablo
+            $$ = create_program($2, $4);
+            print_ast($$);
+        } else {
+            $$ = NULL;
+        }
+    }
+;
 
 declarations:
-    declaration
-    | declarations declaration
-    ;
+    declaration {
+        //kreiramo sekvencu deklaracija ako imamo samo jednu deklaraciju
+        $$ = $1;
+    }
+    | declarations declaration {
+        //dodajemo novu deklaraciju u sekvencu, ako ih je više!!! 
+        $$ = create_sequence($1, $2);
+    }
+;
 
 declaration:
-    type id_list '.'
-    ;
+    type id_list DOT { $$ = create_sequence($1, $2); } //takođe pravimo sekvencu, ovo je slično kao pravilo iznad bez rekurzije
+;
 
 id_list:
-    IDENTIFIER
-    | id_list ',' IDENTIFIER
-    ;
+    IDENTIFIER { $$ = create_identifier($1); } //pravimo zaseban identifikator
+    | id_list COMMA IDENTIFIER { $$ = create_sequence($1, create_identifier($3)); }
+;
 
-type:
-    INT
-    | DOUBLE
-    | BOOL
-    | STRING
-    ;
+type: //tip promjenljivih
+    INT { $$ = create_identifier("int"); }
+    | DOUBLE { $$ = create_identifier("double"); }
+    | BOOL { $$ = create_identifier("bool"); }
+    | STRING { $$ = create_identifier("string"); }
+;
 
-command_sequence:
-    command
-    | command_sequence command
-    ;
+command_sequence: //rekurzivno obavljamo komande
+    command { $$ = $1; }
+    | command_sequence command { $$ = create_sequence($1, $2); }
+;
 
-command:
-    SKIP ';'
-    | IDENTIFIER ASSIGN expression ';'
-    | IF expression THEN command_sequence ELSE command_sequence FI ';'
-    | IF expression THEN command_sequence FI ';' %prec ELSE
-    | WHILE expression DO command_sequence END ';'
-    | FOR IDENTIFIER ASSIGN expression TO expression DO command_sequence END ';'
-    | READ IDENTIFIER ';'
-    | WRITE expression ';'
-    ;
+command: //sve moguće komande, return možda nije obavezan
+    SKIP SEMICOLON { $$ = create_skip(); }
+    | RETURN expression SEMICOLON { $$ = create_return($2); }
+    | IDENTIFIER ASSIGN expression SEMICOLON { $$ = create_assign(create_identifier($1), $3); }
+    | IF expression THEN command_sequence ELSE command_sequence FI SEMICOLON { $$ = create_if($2, $4, $6); }
+    | IF expression THEN command_sequence FI SEMICOLON %prec ELSE { $$ = create_if($2, $4, NULL); }
+    | WHILE expression DO command_sequence break_loop END SEMICOLON { $$ = create_while($2, $4); }
+    | FOR IDENTIFIER ASSIGN expression TO expression DO command_sequence break_loop END SEMICOLON {
+        ASTNode *init = create_assign(create_identifier($2), $4); //prvo pravimo assign
+        $$ = create_for(init, $6, NULL, $8); //i onda pravimo for, ove funkcije se jasnije vide u ast.c
+    }
+    | READ IDENTIFIER SEMICOLON { $$ = create_read(create_identifier($2)); }
+    | WRITE expression SEMICOLON { $$ = create_write($2); }
+;
 
-expression:
-    INTEGER_CONST
-    | DOUBLE_CONST
-    | IDENTIFIER
-    | TRUE
-    | FALSE
-    | expression '+' expression
-    | expression '-' expression
-    | expression '*' expression
-    | expression '/' expression
-    | expression '%' expression
-    | expression LE expression
-    | expression GE expression
-    | expression LT expression
-    | expression GT expression
-    | expression EQ expression
-    | expression NE expression
-    | expression AND expression
-    | expression OR expression
-    | expression POW expression
-    | NOT expression
-    | '(' expression ')'
-    ;
+break_loop:
+    BREAK SEMICOLON { $$ = create_break(); }
+    | { $$ = NULL; }
+;
+
+expression: //svi mogući izrazi u komandama
+    INTEGER_CONST { $$ = create_int_const($1); }
+    | DOUBLE_CONST { $$ = create_double_const($1); }
+    | STRING_CONST { $$ = create_string_const($1); }
+    | IDENTIFIER { $$ = create_identifier($1); }
+    | TRUE { $$ = create_bool_const(1); }
+    | FALSE { $$ = create_bool_const(0); }
+    | expression PLUS expression { $$ = create_binary_operator(NODE_PLUS, $1, $3); }
+    | expression MINUS expression { $$ = create_binary_operator(NODE_MINUS, $1, $3); }
+    | expression MULTIPLY expression { $$ = create_binary_operator(NODE_MULTIPLY, $1, $3); }
+    | expression DIVIDE expression { $$ = create_binary_operator(NODE_DIVIDE, $1, $3); }
+    | expression MOD expression { $$ = create_binary_operator(NODE_MOD, $1, $3); }
+    | expression LE expression { $$ = create_binary_operator(NODE_LE, $1, $3); }
+    | expression GE expression { $$ = create_binary_operator(NODE_GE, $1, $3); }
+    | expression LT expression { $$ = create_binary_operator(NODE_LT, $1, $3); }
+    | expression GT expression { $$ = create_binary_operator(NODE_GT, $1, $3); }
+    | expression EQ expression { $$ = create_binary_operator(NODE_EQ, $1, $3); }
+    | expression NE expression { $$ = create_binary_operator(NODE_NE, $1, $3); }
+    | expression AND expression { $$ = create_binary_operator(NODE_AND, $1, $3); }
+    | expression OR expression { $$ = create_binary_operator(NODE_OR, $1, $3); }
+    | expression POW expression { $$ = create_binary_operator(NODE_POW, $1, $3); }
+    | NOT expression { $$ = create_unary_operator(NODE_NOT, $2); }
+    | LPARENT expression RPARENT { $$ = $2; }
+;
 
 %%
 
 void yyerror(const char* s) {
     reportError(s, yylloc.first_line, yylloc.first_column);
+    syntax_error = 1; //postavljamo promjenljivu na 1 u slučaju greške
 }

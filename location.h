@@ -1,6 +1,7 @@
 #ifndef LOCATION_H
 #define LOCATION_H
 
+//novi način praćenja lokacije
 typedef struct YYLTYPE {
     int first_line;
     int first_column;
@@ -10,4 +11,4 @@ typedef struct YYLTYPE {
 
 #define YYLTYPE_IS_DECLARED 1
 
-#endif // LOCATION_H
+#endif 
