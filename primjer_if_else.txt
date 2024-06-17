@@ -1,0 +1,10 @@
+LET
+    INT a, b.
+IN 
+    IF a < b
+    THEN
+        a := a + 1;
+    ELSE 
+        a := a + 2;
+    FI;
+END

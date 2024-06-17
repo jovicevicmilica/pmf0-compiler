@@ -77,7 +77,7 @@
 #include <stdlib.h>
 #include "ast.h"
 
-void yyerror(const char *s); //funkcija za štampanje sintaksnih grešaka
+void yyerror(); //funkcija za štampanje sintaksnih grešaka
 int syntax_error = 0; //dodajemo globalnu promjenljivu za praćenje grešaka, jer se stablo NE ŠTAMPA u slučaju greške
 
 //definišemo union u kom su tipovi tokena, neki imaju tip, a neki nemaju
@@ -176,10 +176,10 @@ typedef union YYSTYPE
 /* Line 214 of yacc.c  */
 #line 21 "parser.y"
 
-    int intVal;
-    double doubleVal;
-    char* stringVal;
-    ASTNode *node;
+    int int_value;
+    double double_value;
+    char* string_value;
+    Node *node;
 
 
 
@@ -1618,14 +1618,14 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 79 "parser.y"
-    { (yyval.node) = create_identifier((yyvsp[(1) - (1)].stringVal)); ;}
+    { (yyval.node) = create_identifier((yyvsp[(1) - (1)].string_value)); ;}
     break;
 
   case 7:
 
 /* Line 1455 of yacc.c  */
 #line 80 "parser.y"
-    { (yyval.node) = create_sequence((yyvsp[(1) - (3)].node), create_identifier((yyvsp[(3) - (3)].stringVal))); ;}
+    { (yyval.node) = create_sequence((yyvsp[(1) - (3)].node), create_identifier((yyvsp[(3) - (3)].string_value))); ;}
     break;
 
   case 8:
@@ -1688,7 +1688,7 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 98 "parser.y"
-    { (yyval.node) = create_assign(create_identifier((yyvsp[(1) - (4)].stringVal)), (yyvsp[(3) - (4)].node)); ;}
+    { (yyval.node) = create_assign(create_identifier((yyvsp[(1) - (4)].string_value)), (yyvsp[(3) - (4)].node)); ;}
     break;
 
   case 17:
@@ -1717,8 +1717,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 102 "parser.y"
     {
-        ASTNode *init = create_assign(create_identifier((yyvsp[(2) - (11)].stringVal)), (yyvsp[(4) - (11)].node)); //prvo pravimo assign
-        (yyval.node) = create_for(init, (yyvsp[(6) - (11)].node), NULL, (yyvsp[(8) - (11)].node)); //i onda pravimo for, ove funkcije se jasnije vide u ast.c
+        Node *init = create_assign(create_identifier((yyvsp[(2) - (11)].string_value)), (yyvsp[(4) - (11)].node)); // Prvo pravimo assign
+        (yyval.node) = create_for(init, (yyvsp[(6) - (11)].node), (yyvsp[(8) - (11)].node)); // Prosljeđujemo inicijalizaciju, uslov i tijelo
     ;}
     break;
 
@@ -1726,7 +1726,7 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 106 "parser.y"
-    { (yyval.node) = create_read(create_identifier((yyvsp[(2) - (3)].stringVal))); ;}
+    { (yyval.node) = create_read(create_identifier((yyvsp[(2) - (3)].string_value))); ;}
     break;
 
   case 22:
@@ -1754,28 +1754,28 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 116 "parser.y"
-    { (yyval.node) = create_int_const((yyvsp[(1) - (1)].intVal)); ;}
+    { (yyval.node) = create_int_const((yyvsp[(1) - (1)].int_value)); ;}
     break;
 
   case 26:
 
 /* Line 1455 of yacc.c  */
 #line 117 "parser.y"
-    { (yyval.node) = create_double_const((yyvsp[(1) - (1)].doubleVal)); ;}
+    { (yyval.node) = create_double_const((yyvsp[(1) - (1)].double_value)); ;}
     break;
 
   case 27:
 
 /* Line 1455 of yacc.c  */
 #line 118 "parser.y"
-    { (yyval.node) = create_string_const((yyvsp[(1) - (1)].stringVal)); ;}
+    { (yyval.node) = create_string_const((yyvsp[(1) - (1)].string_value)); ;}
     break;
 
   case 28:
 
 /* Line 1455 of yacc.c  */
 #line 119 "parser.y"
-    { (yyval.node) = create_identifier((yyvsp[(1) - (1)].stringVal)); ;}
+    { (yyval.node) = create_identifier((yyvsp[(1) - (1)].string_value)); ;}
     break;
 
   case 29:
@@ -1796,105 +1796,105 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 122 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_PLUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_PLUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 32:
 
 /* Line 1455 of yacc.c  */
 #line 123 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_MINUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_MINUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 33:
 
 /* Line 1455 of yacc.c  */
 #line 124 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_MULTIPLY, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_MULTIPLY, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 34:
 
 /* Line 1455 of yacc.c  */
 #line 125 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_DIVIDE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_DIVIDE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 35:
 
 /* Line 1455 of yacc.c  */
 #line 126 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_MOD, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_MOD, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 36:
 
 /* Line 1455 of yacc.c  */
 #line 127 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_LE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_LE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 37:
 
 /* Line 1455 of yacc.c  */
 #line 128 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_GE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_GE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 38:
 
 /* Line 1455 of yacc.c  */
 #line 129 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_LT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_LT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 39:
 
 /* Line 1455 of yacc.c  */
 #line 130 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_GT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_GT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 40:
 
 /* Line 1455 of yacc.c  */
 #line 131 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_EQ, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_EQ, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 41:
 
 /* Line 1455 of yacc.c  */
 #line 132 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_NE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_NE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 42:
 
 /* Line 1455 of yacc.c  */
 #line 133 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_AND, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_AND, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 43:
 
 /* Line 1455 of yacc.c  */
 #line 134 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_OR, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_OR, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 44:
 
 /* Line 1455 of yacc.c  */
 #line 135 "parser.y"
-    { (yyval.node) = create_binary_operator(NODE_POW, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node) = create_binary_operator(N_POW, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 45:
 
 /* Line 1455 of yacc.c  */
 #line 136 "parser.y"
-    { (yyval.node) = create_unary_operator(NODE_NOT, (yyvsp[(2) - (2)].node)); ;}
+    { (yyval.node) = create_unary_operator(N_NOT, (yyvsp[(2) - (2)].node)); ;}
     break;
 
   case 46:
@@ -2129,8 +2129,9 @@ yyreturn:
 #line 140 "parser.y"
 
 
-void yyerror(const char* s) {
-    reportError(s, yylloc.first_line, yylloc.first_column);
+void yyerror() {
+    extern char *yytext; //tekst koji je parser trenutno analizirao kada je greška nastala
+    report_syntax_error(yytext, yylloc.first_line, yylloc.first_column);
     syntax_error = 1; //postavljamo promjenljivu na 1 u slučaju greške
 }
 

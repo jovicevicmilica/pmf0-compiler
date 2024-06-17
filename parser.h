@@ -3,7 +3,7 @@
 
 #include "location.h"
 
-void yyerror(const char* s);
+void yyerror();
 int yyparse();
 int yylex();
 

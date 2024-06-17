@@ -1,0 +1,7 @@
+LET
+    INT a.
+IN
+    FOR a := 1 TO 5 DO
+        WRITE a;
+    END;
+END

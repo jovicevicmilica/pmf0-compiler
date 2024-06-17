@@ -98,10 +98,10 @@ typedef union YYSTYPE
 /* Line 1676 of yacc.c  */
 #line 21 "parser.y"
 
-    int intVal;
-    double doubleVal;
-    char* stringVal;
-    ASTNode *node;
+    int int_value;
+    double double_value;
+    char* string_value;
+    Node *node;
 
 
 

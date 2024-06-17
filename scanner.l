@@ -59,36 +59,37 @@ int error_reported = 0; //isto za string, pamtimo da li je vec u vise redova
 "WHILE"     { return WHILE; }
 "DO"        { return DO; }
 "FOR"       { return FOR; }
+"TO"        { return TO; }
 "BREAK"     { return BREAK; }
 "RETURN"    { return RETURN; }
 "TRUE"      { return TRUE; }
 "FALSE"     { return FALSE; }
 
-0|[1-9][0-9]*                           { yylval.intVal = atoi(yytext); return INTEGER_CONST; }
+0|[1-9][0-9]*                           { yylval.int_value = atoi(yytext); return INTEGER_CONST; }
 
-[a-zA-Z][a-zA-Z0-9_]{0,30}              { yylval.stringVal = strdup(yytext); return IDENTIFIER; }
+[a-zA-Z][a-zA-Z0-9_]{0,30}              { yylval.string_value = strdup(yytext); return IDENTIFIER; }
 
-[a-zA-Z][a-zA-Z0-9_]{30}[^ \t\r\n]+     { reportLexicalError("Neispravan format identifikatora (duzina prelazi 31)", yylineno, column - yyleng); }
+[a-zA-Z][a-zA-Z0-9_]{30}[^ \t\r\n]+     { report_lexical_error("Neispravan format identifikatora (duzina prelazi 31)", yylineno, column - yyleng); }
 
-(0x|0X)(0|[1-9A-Fa-f][0-9A-Fa-f]*)      { yylval.intVal = strtol(yytext, NULL, 16); return INTEGER_CONST; }
+(0x|0X)(0|[1-9A-Fa-f][0-9A-Fa-f]*)      { yylval.int_value = strtol(yytext, NULL, 16); return INTEGER_CONST; }
 
-(0x|0X)[0-9A-Fa-f]+[^ \t\r\n0-9A-Fa-f]+ { reportLexicalError("Neispravan format heksadecimalne konstante (ima nedozvoljene cifre)", yylineno, column - yyleng); }
+(0x|0X)[0-9A-Fa-f]+[^ \t\r\n0-9A-Fa-f]+ { report_lexical_error("Neispravan format heksadecimalne konstante (ima nedozvoljene cifre)", yylineno, column - yyleng); }
 
-[0-9]+\.[0-9]*([eE][+-]?[0-9]+)?        { yylval.doubleVal = atof(yytext); return DOUBLE_CONST; }
+[0-9]+\.[0-9]*([eE][+-]?[0-9]+)?        { yylval.double_value = atof(yytext); return DOUBLE_CONST; }
 
-\.[0-9]+([eE][+-]?[0-9]+)?              { reportLexicalError("Neispravan format double konstante (nema vodecu cifru)", yylineno, column - yyleng); }
+\.[0-9]+([eE][+-]?[0-9]+)?              { report_lexical_error("Neispravan format double konstante (nema vodecu cifru)", yylineno, column - yyleng); }
 
-[0-9]+[eE][+-]?[0-9]+                   { reportLexicalError("Neispravan format double konstante (eksponent bez tacke)", yylineno, column - yyleng); }
+[0-9]+[eE][+-]?[0-9]+                   { report_lexical_error("Neispravan format double konstante (eksponent bez tacke)", yylineno, column - yyleng); }
 
-[0-9]+(\.[0-9]*)?\.[0-9]+               { reportLexicalError("Neispravan format double konstante (visak tacaka)", yylineno, column - yyleng); }
+[0-9]+(\.[0-9]*)?\.[0-9]+               { report_lexical_error("Neispravan format double konstante (visak tacaka)", yylineno, column - yyleng); }
 
-[0-9]+\.[0-9]*[eE][+-]?                 { reportLexicalError("Neispravan format double konstante (eksponent bez cifara posle znaka)", yylineno, column - yyleng); }
+[0-9]+\.[0-9]*[eE][+-]?                 { report_lexical_error("Neispravan format double konstante (eksponent bez cifara posle znaka)", yylineno, column - yyleng); }
 
-\"[^"\n]*\"                             { yylval.stringVal = strdup(yytext); return STRING_CONST; }
+\"[^"\n]*\"                             { yylval.string_value = strdup(yytext); return STRING_CONST; }
 
 \"                                      { BEGIN(STRING_STATE); temp_column = column; error_reported = 0; }
 
-[_][a-zA-Z0-9_]+                        { reportLexicalError("Neispravan format identifikatora (ne moze poceti sa '_')", yylineno, column - yyleng); }
+[_][a-zA-Z0-9_]+                        { report_lexical_error("Neispravan format identifikatora (ne moze poceti sa '_')", yylineno, column - yyleng); }
 
 "<="    { return LE; } //OPERATORI
 ">="    { return GE; }
@@ -112,7 +113,7 @@ int error_reported = 0; //isto za string, pamtimo da li je vec u vise redova
 "("     { return LPARENT; }
 ")"     { return RPARENT; }
 
-.           { reportLexicalError("Neocekivani karakter", yylineno, column - yyleng); }
+.           { report_lexical_error("Neocekivani karakter", yylineno, column - yyleng); }
 
 <LINE_COMMENT>{
 "\n"        { column = 1; BEGIN(INITIAL); }
@@ -120,19 +121,19 @@ int error_reported = 0; //isto za string, pamtimo da li je vec u vise redova
 }
 
 <MULTILINE_COMMENT>{
-"/*"        { comment_nesting++; reportLexicalError("Nije dozvoljeno ugnjezdjavanje komentara", yylineno, column - yyleng); }
+"/*"        { comment_nesting++; report_lexical_error("Nije dozvoljeno ugnjezdjavanje komentara", yylineno, column - yyleng); }
 "*/"        { if(--comment_nesting == 0) {} BEGIN(INITIAL); }
 .           { }
 "\n"        { column = 1; }
-<<EOF>>     { if(comment_nesting > 0) reportLexicalError("Nezatvoren viselinijski komentar", yylineno, column - yyleng); BEGIN(INITIAL); }
+<<EOF>>     { if(comment_nesting > 0) report_lexical_error("Nezatvoren viselinijski komentar", yylineno, column - yyleng); BEGIN(INITIAL); }
 }
 
 <STRING_STATE>{
 \\\"        { } //escaped quote, nista posebno ne radimo
 \\\n        { } //escaped newline
-\n          { if(error_reported == 0) { reportLexicalError("String u vise redova", yylineno, temp_column - yyleng); error_reported = 1; } column = 1; }
-\"          { yylval.stringVal = strdup(yytext); BEGIN(INITIAL); return STRING; }
-<<EOF>>     { reportLexicalError("Nezatvoren string na kraju fajla", yylineno, column - yyleng); BEGIN(INITIAL); }
+\n          { if(error_reported == 0) { report_lexical_error("String u vise redova", yylineno, temp_column - yyleng); error_reported = 1; } column = 1; }
+\"          { yylval.string_value = strdup(yytext); BEGIN(INITIAL); return STRING; }
+<<EOF>>     { report_lexical_error("Nezatvoren string na kraju fajla", yylineno, column - yyleng); BEGIN(INITIAL); }
 .           { }
 }
 

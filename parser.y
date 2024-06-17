@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "ast.h"
 
-void yyerror(const char *s); //funkcija za štampanje sintaksnih grešaka
+void yyerror(); //funkcija za štampanje sintaksnih grešaka
 int syntax_error = 0; //dodajemo globalnu promjenljivu za praćenje grešaka, jer se stablo NE ŠTAMPA u slučaju greške
 
 //definišemo union u kom su tipovi tokena, neki imaju tip, a neki nemaju
@@ -19,15 +19,15 @@ int syntax_error = 0; //dodajemo globalnu promjenljivu za praćenje grešaka, je
 %}
 
 %union {
-    int intVal;
-    double doubleVal;
-    char* stringVal;
-    ASTNode *node;
+    int int_value;
+    double double_value;
+    char* string_value;
+    Node *node;
 }
 
-%token <intVal> INTEGER_CONST
-%token <doubleVal> DOUBLE_CONST
-%token <stringVal> IDENTIFIER STRING_CONST
+%token <int_value> INTEGER_CONST
+%token <double_value> DOUBLE_CONST
+%token <string_value> IDENTIFIER STRING_CONST
 %token PLUS MINUS MULTIPLY DIVIDE MOD LE GE LT GT EQ NE AND OR NOT POW
 %token ASSIGN READ WRITE SKIP IF THEN ELSE FI WHILE DO FOR TO BREAK RETURN
 %token STRING BOOL INT DOUBLE LPARENT RPARENT COMMA DOT SEMICOLON
@@ -100,8 +100,8 @@ command: //sve moguće komande, return možda nije obavezan
     | IF expression THEN command_sequence FI SEMICOLON %prec ELSE { $$ = create_if($2, $4, NULL); }
     | WHILE expression DO command_sequence break_loop END SEMICOLON { $$ = create_while($2, $4); }
     | FOR IDENTIFIER ASSIGN expression TO expression DO command_sequence break_loop END SEMICOLON {
-        ASTNode *init = create_assign(create_identifier($2), $4); //prvo pravimo assign
-        $$ = create_for(init, $6, NULL, $8); //i onda pravimo for, ove funkcije se jasnije vide u ast.c
+        Node *init = create_assign(create_identifier($2), $4); // Prvo pravimo assign
+        $$ = create_for(init, $6, $8); // Prosljeđujemo inicijalizaciju, uslov i tijelo
     }
     | READ IDENTIFIER SEMICOLON { $$ = create_read(create_identifier($2)); }
     | WRITE expression SEMICOLON { $$ = create_write($2); }
@@ -119,27 +119,28 @@ expression: //svi mogući izrazi u komandama
     | IDENTIFIER { $$ = create_identifier($1); }
     | TRUE { $$ = create_bool_const(1); }
     | FALSE { $$ = create_bool_const(0); }
-    | expression PLUS expression { $$ = create_binary_operator(NODE_PLUS, $1, $3); }
-    | expression MINUS expression { $$ = create_binary_operator(NODE_MINUS, $1, $3); }
-    | expression MULTIPLY expression { $$ = create_binary_operator(NODE_MULTIPLY, $1, $3); }
-    | expression DIVIDE expression { $$ = create_binary_operator(NODE_DIVIDE, $1, $3); }
-    | expression MOD expression { $$ = create_binary_operator(NODE_MOD, $1, $3); }
-    | expression LE expression { $$ = create_binary_operator(NODE_LE, $1, $3); }
-    | expression GE expression { $$ = create_binary_operator(NODE_GE, $1, $3); }
-    | expression LT expression { $$ = create_binary_operator(NODE_LT, $1, $3); }
-    | expression GT expression { $$ = create_binary_operator(NODE_GT, $1, $3); }
-    | expression EQ expression { $$ = create_binary_operator(NODE_EQ, $1, $3); }
-    | expression NE expression { $$ = create_binary_operator(NODE_NE, $1, $3); }
-    | expression AND expression { $$ = create_binary_operator(NODE_AND, $1, $3); }
-    | expression OR expression { $$ = create_binary_operator(NODE_OR, $1, $3); }
-    | expression POW expression { $$ = create_binary_operator(NODE_POW, $1, $3); }
-    | NOT expression { $$ = create_unary_operator(NODE_NOT, $2); }
+    | expression PLUS expression { $$ = create_binary_operator(N_PLUS, $1, $3); }
+    | expression MINUS expression { $$ = create_binary_operator(N_MINUS, $1, $3); }
+    | expression MULTIPLY expression { $$ = create_binary_operator(N_MULTIPLY, $1, $3); }
+    | expression DIVIDE expression { $$ = create_binary_operator(N_DIVIDE, $1, $3); }
+    | expression MOD expression { $$ = create_binary_operator(N_MOD, $1, $3); }
+    | expression LE expression { $$ = create_binary_operator(N_LE, $1, $3); }
+    | expression GE expression { $$ = create_binary_operator(N_GE, $1, $3); }
+    | expression LT expression { $$ = create_binary_operator(N_LT, $1, $3); }
+    | expression GT expression { $$ = create_binary_operator(N_GT, $1, $3); }
+    | expression EQ expression { $$ = create_binary_operator(N_EQ, $1, $3); }
+    | expression NE expression { $$ = create_binary_operator(N_NE, $1, $3); }
+    | expression AND expression { $$ = create_binary_operator(N_AND, $1, $3); }
+    | expression OR expression { $$ = create_binary_operator(N_OR, $1, $3); }
+    | expression POW expression { $$ = create_binary_operator(N_POW, $1, $3); }
+    | NOT expression { $$ = create_unary_operator(N_NOT, $2); }
     | LPARENT expression RPARENT { $$ = $2; }
 ;
 
 %%
 
-void yyerror(const char* s) {
-    reportError(s, yylloc.first_line, yylloc.first_column);
+void yyerror() {
+    extern char *yytext; //tekst koji je parser trenutno analizirao kada je greška nastala
+    report_syntax_error(yytext, yylloc.first_line, yylloc.first_column);
     syntax_error = 1; //postavljamo promjenljivu na 1 u slučaju greške
 }
