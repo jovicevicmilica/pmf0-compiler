@@ -579,18 +579,18 @@ char *yytext;
 #include "errors.h"
 #include "scanner.h"
 
-int column = 1; //pratimo kolonu, posto je flex ne generise moramo je samostalno uvecavati
-int temp_column = 1; //pomocna kolona za nepravilne stringove
-int comment_nesting = 0; //brojac za ugnjezdene komentare
-int error_reported = 0; //isto za string, pamtimo da li je vec u vise redova
+int column = 1; //pratimo kolonu, posto je flex ne generiše moramo je samostalno uvećavati
+int temp_column = 1; //pomoćna kolona za nepravilne stringove
+int comment_nesting = 0; //brojač za ugnježdene komentare
+int error_reported = 0; //isto za string, pamtimo da li je već u više redova
 
 #define YY_USER_ACTION \
     yylloc.first_line = yylloc.last_line = yylineno; \
     yylloc.first_column = column; \
     yylloc.last_column = column + yyleng - 1; \
     column += yyleng;
-//ovako ce nam se ova fja pozivati prije izvrsenja iceg drugog kod tokena, i time ne moramo
-//vrsiti sabiranje posebno u svakom dijelu, medjutim, ako je ne umanjimo posle u printu, vracace nam da je greska u poslednjem karakteru stringa, a ne prvom
+//ovako će nam se ova fja pozivati prije izvršenja ičeg drugog kod tokena, i time ne moramo
+//vršiti sabiranje posebno u svakom dijelu, međutim, ako je ne umanjimo posle u printu, vraćace nam da je greška u poslednjem karakteru stringa, a ne prvom
 //sve zavisi do preferenci
 
 #include <string.h>
@@ -850,7 +850,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 YY_RULE_SETUP
 #line 35 "scanner.l"
-{ } //ne radimo nista, potrebno nam samo da se kolona uveca, a to radimo gore vec
+{ } //ne radimo ništa, potrebno nam samo da se kolona uveća, a to radimo gore već
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
@@ -860,7 +860,7 @@ YY_RULE_SETUP
 case 3:
 YY_RULE_SETUP
 #line 37 "scanner.l"
-{ column = 1; } //yylineno ne moramo dirati, on se automatski azurira
+{ column = 1; } //yylineno ne moramo dirati, on se automatski ažurira
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
@@ -930,7 +930,7 @@ YY_RULE_SETUP
 case 17:
 YY_RULE_SETUP
 #line 55 "scanner.l"
-{ return IF; } //IF I OSTALE KLJUCNE RIJECI
+{ return IF; } //IF I OSTALE KLJUČNE RIJECI
 	YY_BREAK
 case 18:
 YY_RULE_SETUP

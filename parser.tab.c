@@ -87,10 +87,11 @@ int syntax_error = 0; //dodajemo globalnu promjenljivu za praćenje grešaka, je
 
 //navodimo tokene, i uz one koje imaju tip i njihov tip iz union
 //zatim definišemo jesu li right ili left operatori
+//program, deklaracije, komande i sl. će biti tipa node, jer predstavljaju čvorove u AST
 
 
 /* Line 189 of yacc.c  */
-#line 94 "parser.tab.c"
+#line 95 "parser.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -174,7 +175,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 21 "parser.y"
+#line 22 "parser.y"
 
     int int_value;
     double double_value;
@@ -184,7 +185,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 188 "parser.tab.c"
+#line 189 "parser.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -209,7 +210,7 @@ typedef struct YYLTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 213 "parser.tab.c"
+#line 214 "parser.tab.c"
 
 #ifdef short
 # undef short
@@ -518,11 +519,11 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    53,    53,    64,    68,    75,    79,    80,    84,    85,
-      86,    87,    91,    92,    96,    97,    98,    99,   100,   101,
-     102,   106,   107,   111,   112,   116,   117,   118,   119,   120,
-     121,   122,   123,   124,   125,   126,   127,   128,   129,   130,
-     131,   132,   133,   134,   135,   136,   137
+       0,    54,    54,    65,    69,    76,    81,    82,    86,    87,
+      88,    89,    93,    94,    98,    99,   100,   101,   102,   103,
+     104,   108,   109,   113,   114,   118,   119,   120,   121,   122,
+     123,   124,   125,   126,   127,   128,   129,   130,   131,   132,
+     133,   134,   135,   136,   137,   138,   139
 };
 #endif
 
@@ -1576,7 +1577,7 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 53 "parser.y"
+#line 54 "parser.y"
     {
         if (syntax_error == 0) { //provjeravamo da li je bilo grešaka, jer se inače ne štampa stablo
             (yyval.node) = create_program((yyvsp[(2) - (5)].node), (yyvsp[(4) - (5)].node));
@@ -1590,7 +1591,7 @@ yyreduce:
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 64 "parser.y"
+#line 65 "parser.y"
     {
         //kreiramo sekvencu deklaracija ako imamo samo jednu deklaraciju
         (yyval.node) = (yyvsp[(1) - (1)].node);
@@ -1600,9 +1601,9 @@ yyreduce:
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 68 "parser.y"
+#line 69 "parser.y"
     {
-        //dodajemo novu deklaraciju u sekvencu, ako ih je više!!! 
+        //dodajemo novu deklaraciju u sekvencu, ako ih je više!!! drugačije bi vraćalo recimo samo sve int - ove, ako je int prvi
         (yyval.node) = create_sequence((yyvsp[(1) - (2)].node), (yyvsp[(2) - (2)].node));
     ;}
     break;
@@ -1610,304 +1611,304 @@ yyreduce:
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 75 "parser.y"
+#line 76 "parser.y"
     { (yyval.node) = create_sequence((yyvsp[(1) - (3)].node), (yyvsp[(2) - (3)].node)); ;}
     break;
 
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 79 "parser.y"
+#line 81 "parser.y"
     { (yyval.node) = create_identifier((yyvsp[(1) - (1)].string_value)); ;}
     break;
 
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 80 "parser.y"
+#line 82 "parser.y"
     { (yyval.node) = create_sequence((yyvsp[(1) - (3)].node), create_identifier((yyvsp[(3) - (3)].string_value))); ;}
     break;
 
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 84 "parser.y"
+#line 86 "parser.y"
     { (yyval.node) = create_identifier("int"); ;}
     break;
 
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 85 "parser.y"
+#line 87 "parser.y"
     { (yyval.node) = create_identifier("double"); ;}
     break;
 
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 86 "parser.y"
+#line 88 "parser.y"
     { (yyval.node) = create_identifier("bool"); ;}
     break;
 
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 87 "parser.y"
+#line 89 "parser.y"
     { (yyval.node) = create_identifier("string"); ;}
     break;
 
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 91 "parser.y"
+#line 93 "parser.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
     break;
 
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 92 "parser.y"
+#line 94 "parser.y"
     { (yyval.node) = create_sequence((yyvsp[(1) - (2)].node), (yyvsp[(2) - (2)].node)); ;}
     break;
 
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 96 "parser.y"
+#line 98 "parser.y"
     { (yyval.node) = create_skip(); ;}
     break;
 
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 97 "parser.y"
+#line 99 "parser.y"
     { (yyval.node) = create_return((yyvsp[(2) - (3)].node)); ;}
     break;
 
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 98 "parser.y"
+#line 100 "parser.y"
     { (yyval.node) = create_assign(create_identifier((yyvsp[(1) - (4)].string_value)), (yyvsp[(3) - (4)].node)); ;}
     break;
 
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 99 "parser.y"
+#line 101 "parser.y"
     { (yyval.node) = create_if((yyvsp[(2) - (8)].node), (yyvsp[(4) - (8)].node), (yyvsp[(6) - (8)].node)); ;}
     break;
 
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 100 "parser.y"
+#line 102 "parser.y"
     { (yyval.node) = create_if((yyvsp[(2) - (6)].node), (yyvsp[(4) - (6)].node), NULL); ;}
     break;
 
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 101 "parser.y"
+#line 103 "parser.y"
     { (yyval.node) = create_while((yyvsp[(2) - (7)].node), (yyvsp[(4) - (7)].node)); ;}
     break;
 
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 102 "parser.y"
+#line 104 "parser.y"
     {
-        Node *init = create_assign(create_identifier((yyvsp[(2) - (11)].string_value)), (yyvsp[(4) - (11)].node)); // Prvo pravimo assign
-        (yyval.node) = create_for(init, (yyvsp[(6) - (11)].node), (yyvsp[(8) - (11)].node)); // Prosljeđujemo inicijalizaciju, uslov i tijelo
+        Node *init = create_assign(create_identifier((yyvsp[(2) - (11)].string_value)), (yyvsp[(4) - (11)].node)); //prvo pravimo assign
+        (yyval.node) = create_for(init, (yyvsp[(6) - (11)].node), (yyvsp[(8) - (11)].node)); //proslijeđujemo inicijalizaciju, uslov i tijelo
     ;}
     break;
 
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 106 "parser.y"
+#line 108 "parser.y"
     { (yyval.node) = create_read(create_identifier((yyvsp[(2) - (3)].string_value))); ;}
     break;
 
   case 22:
 
 /* Line 1455 of yacc.c  */
-#line 107 "parser.y"
+#line 109 "parser.y"
     { (yyval.node) = create_write((yyvsp[(2) - (3)].node)); ;}
     break;
 
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 111 "parser.y"
+#line 113 "parser.y"
     { (yyval.node) = create_break(); ;}
     break;
 
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 112 "parser.y"
+#line 114 "parser.y"
     { (yyval.node) = NULL; ;}
     break;
 
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 116 "parser.y"
+#line 118 "parser.y"
     { (yyval.node) = create_int_const((yyvsp[(1) - (1)].int_value)); ;}
     break;
 
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 117 "parser.y"
+#line 119 "parser.y"
     { (yyval.node) = create_double_const((yyvsp[(1) - (1)].double_value)); ;}
     break;
 
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 118 "parser.y"
+#line 120 "parser.y"
     { (yyval.node) = create_string_const((yyvsp[(1) - (1)].string_value)); ;}
     break;
 
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 119 "parser.y"
+#line 121 "parser.y"
     { (yyval.node) = create_identifier((yyvsp[(1) - (1)].string_value)); ;}
     break;
 
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 120 "parser.y"
+#line 122 "parser.y"
     { (yyval.node) = create_bool_const(1); ;}
     break;
 
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 121 "parser.y"
+#line 123 "parser.y"
     { (yyval.node) = create_bool_const(0); ;}
     break;
 
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 122 "parser.y"
+#line 124 "parser.y"
     { (yyval.node) = create_binary_operator(N_PLUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 123 "parser.y"
+#line 125 "parser.y"
     { (yyval.node) = create_binary_operator(N_MINUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 124 "parser.y"
+#line 126 "parser.y"
     { (yyval.node) = create_binary_operator(N_MULTIPLY, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 125 "parser.y"
+#line 127 "parser.y"
     { (yyval.node) = create_binary_operator(N_DIVIDE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 126 "parser.y"
+#line 128 "parser.y"
     { (yyval.node) = create_binary_operator(N_MOD, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 127 "parser.y"
+#line 129 "parser.y"
     { (yyval.node) = create_binary_operator(N_LE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 128 "parser.y"
+#line 130 "parser.y"
     { (yyval.node) = create_binary_operator(N_GE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 129 "parser.y"
+#line 131 "parser.y"
     { (yyval.node) = create_binary_operator(N_LT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 130 "parser.y"
+#line 132 "parser.y"
     { (yyval.node) = create_binary_operator(N_GT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 131 "parser.y"
+#line 133 "parser.y"
     { (yyval.node) = create_binary_operator(N_EQ, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 132 "parser.y"
+#line 134 "parser.y"
     { (yyval.node) = create_binary_operator(N_NE, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 133 "parser.y"
+#line 135 "parser.y"
     { (yyval.node) = create_binary_operator(N_AND, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 134 "parser.y"
+#line 136 "parser.y"
     { (yyval.node) = create_binary_operator(N_OR, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 135 "parser.y"
+#line 137 "parser.y"
     { (yyval.node) = create_binary_operator(N_POW, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 136 "parser.y"
+#line 138 "parser.y"
     { (yyval.node) = create_unary_operator(N_NOT, (yyvsp[(2) - (2)].node)); ;}
     break;
 
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 137 "parser.y"
+#line 139 "parser.y"
     { (yyval.node) = (yyvsp[(2) - (3)].node); ;}
     break;
 
 
 
 /* Line 1455 of yacc.c  */
-#line 1911 "parser.tab.c"
+#line 1912 "parser.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2126,12 +2127,12 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 140 "parser.y"
+#line 142 "parser.y"
 
 
 void yyerror() {
     extern char *yytext; //tekst koji je parser trenutno analizirao kada je greška nastala
     report_syntax_error(yytext, yylloc.first_line, yylloc.first_column);
-    syntax_error = 1; //postavljamo promjenljivu na 1 u slučaju greške
+    syntax_error = 1; //postavljamo promjenljivu na 1 u slučaju greške, da nam ne štampa stablo
 }
 

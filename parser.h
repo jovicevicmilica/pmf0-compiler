@@ -5,6 +5,6 @@
 
 void yyerror();
 int yyparse();
-int yylex();
+int yylex(); //deklaracije funkcija u parseru
 
 #endif 

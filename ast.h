@@ -5,9 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+//definisemo strukturu za ast čvorove
 typedef struct Node {
     enum {
-        //prvo preko enumeracije definišemo sve vrste čvorova koje AST može da ima, tj. one koje štampa i uzima u obzir
+        //prvo preko enumeracije definišemo sve vrste čvorova koje ast može da ima
         N_INTEGER_CONST, N_DOUBLE_CONST, N_STRING_CONST, N_BOOL_CONST,
         N_IDENTIFIER, N_PLUS, N_MINUS, N_MULTIPLY, N_DIVIDE,
         N_MOD, N_LE, N_GE, N_LT, N_GT, N_EQ, N_NE, N_AND,
@@ -16,7 +17,7 @@ typedef struct Node {
         N_PROGRAM, N_LET, N_IN, N_END, N_RETURN,
     } type;
     union {
-        //union nam omogućava da svaki čvor u AST - u sadrži različite tipove podataka
+        //union nam omogućava da svaki čvor u ast - u sadrži različite tipove podataka
         //zavisno od vrste čvora, npr. konstante imaju vrijednosti int, double, string, a neki drugi čvorovi pokazivače na lijevi i desni element u operaciji
         int int_value;
         double double_value;
@@ -62,10 +63,13 @@ typedef struct Node {
 } Node;
 
 //definišemo deklaracije funkcija za kreiranje čvorova različitih tipova
-Node *create_program(Node *declarations, Node *commands); //prvo program koji ima i LET i IN
-Node *create_let(Node *declarations); //dio programa, osnovne komande, unutar LET idu deklaracije
-Node *create_in(Node *commands); //unutar IN idu komande
-Node *create_end(); //poslije END nemamo ništa
+#define CREATE_NODE() ((Node *)malloc(sizeof(Node)))
+#define SET_NODE_TYPE(NODE, TYPE) (NODE)->type = TYPE
+
+Node *create_program(Node *declarations, Node *commands); //prvo program koji ima i let i in
+Node *create_let(Node *declarations); //dio programa, osnovne komande, unutar let idu deklaracije
+Node *create_in(Node *commands); //unutar in idu komande
+Node *create_end(); //poslije end nemamo ništa
 
 //konstantni čvorovi sa vrijednostima int_value, double_value, string_value,
 //i identifikator koji ima ime promjenljive koju označava
@@ -74,13 +78,12 @@ Node *create_double_const(double value);
 Node *create_string_const(char *value);
 Node *create_bool_const(int value);
 Node *create_identifier(char *name);
-Node *create_sequence(Node *first, Node *second);
-//pravljenje sekvenci čvorova
+Node *create_sequence(Node *first, Node *second); //pravljenje sekvenci čvorova
 
 //operatori i njihov tip
 Node *create_binary_operator(int type, Node *left, Node *right);
 Node *create_unary_operator(int type, Node *node);
- 
+
 //petlje
 Node *create_if(Node *condition, Node *branch_then, Node *branch_else);
 Node *create_while(Node *condition, Node *body);
@@ -92,10 +95,13 @@ Node *create_read(Node *node);
 Node *create_write(Node *node);
 Node *create_skip();
 Node *create_break();
-Node *create_return(Node *node); 
+Node *create_return(Node *node);
 
-//štampanje AST, počevši od korijena
+//štampanje ast, počevši od korijena
 void print_ast_helper(Node *root, int depth, int current_level);
 void print_ast(Node *root);
 
-#endif 
+//da oslobodimo memoriju koju smo zauzeli
+void free_ast(Node *root);
+
+#endif

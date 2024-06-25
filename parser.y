@@ -16,6 +16,7 @@ int syntax_error = 0; //dodajemo globalnu promjenljivu za praćenje grešaka, je
 
 //navodimo tokene, i uz one koje imaju tip i njihov tip iz union
 //zatim definišemo jesu li right ili left operatori
+//program, deklaracije, komande i sl. će biti tipa node, jer predstavljaju čvorove u AST
 %}
 
 %union {
@@ -66,21 +67,22 @@ declarations:
         $$ = $1;
     }
     | declarations declaration {
-        //dodajemo novu deklaraciju u sekvencu, ako ih je više!!! 
+        //dodajemo novu deklaraciju u sekvencu, ako ih je više!!! drugačije bi vraćalo recimo samo sve int - ove, ako je int prvi
         $$ = create_sequence($1, $2);
     }
 ;
 
 declaration:
-    type id_list DOT { $$ = create_sequence($1, $2); } //takođe pravimo sekvencu, ovo je slično kao pravilo iznad bez rekurzije
+    type id_list DOT { $$ = create_sequence($1, $2); } //takođe pravimo sekvencu, ovo je slično kao pravilo iznad bez rekurzije, ako ovo
+    //maknemo, samo se neće štampati promjenljive u LET - u, to možda i treba tako!
 ;
 
 id_list:
-    IDENTIFIER { $$ = create_identifier($1); } //pravimo zaseban identifikator
+    IDENTIFIER { $$ = create_identifier($1); } //pravimo zaseban identifikator, isto važi kao i iznad
     | id_list COMMA IDENTIFIER { $$ = create_sequence($1, create_identifier($3)); }
 ;
 
-type: //tip promjenljivih
+type: //tip promjenljivih, ključne riječi
     INT { $$ = create_identifier("int"); }
     | DOUBLE { $$ = create_identifier("double"); }
     | BOOL { $$ = create_identifier("bool"); }
@@ -100,8 +102,8 @@ command: //sve moguće komande, return možda nije obavezan
     | IF expression THEN command_sequence FI SEMICOLON %prec ELSE { $$ = create_if($2, $4, NULL); }
     | WHILE expression DO command_sequence break_loop END SEMICOLON { $$ = create_while($2, $4); }
     | FOR IDENTIFIER ASSIGN expression TO expression DO command_sequence break_loop END SEMICOLON {
-        Node *init = create_assign(create_identifier($2), $4); // Prvo pravimo assign
-        $$ = create_for(init, $6, $8); // Prosljeđujemo inicijalizaciju, uslov i tijelo
+        Node *init = create_assign(create_identifier($2), $4); //prvo pravimo assign
+        $$ = create_for(init, $6, $8); //proslijeđujemo inicijalizaciju, uslov i tijelo
     }
     | READ IDENTIFIER SEMICOLON { $$ = create_read(create_identifier($2)); }
     | WRITE expression SEMICOLON { $$ = create_write($2); }
@@ -142,5 +144,5 @@ expression: //svi mogući izrazi u komandama
 void yyerror() {
     extern char *yytext; //tekst koji je parser trenutno analizirao kada je greška nastala
     report_syntax_error(yytext, yylloc.first_line, yylloc.first_column);
-    syntax_error = 1; //postavljamo promjenljivu na 1 u slučaju greške
+    syntax_error = 1; //postavljamo promjenljivu na 1 u slučaju greške, da nam ne štampa stablo
 }

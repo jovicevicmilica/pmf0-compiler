@@ -3,6 +3,6 @@
 
 #include "location.h"
 #include "parser.h"
-#include "ast.h"
+#include "ast.h" //deklaracije za skener
 
 #endif 
